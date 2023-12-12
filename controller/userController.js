@@ -90,7 +90,7 @@ const logout = asyncHandler(async (req, res, next) => {
       httpOnly: true,
       secure: true,
     });
-    return res.sendStatus(204); //forbidden
+    return res.sendStatus(204) //forbidden
   }
   await User.findByIdAndUpdate(user._id, { refreshToken: "" });
 
@@ -98,7 +98,7 @@ const logout = asyncHandler(async (req, res, next) => {
     httpOnly: true,
     secure: true,
   });
-  res.sendStatus(204); //no Content
+  res.sendStatus(204).json({message: "successfully logged out"});; //no Content
 });
 
 //getAll users
@@ -280,5 +280,3 @@ module.exports = {
 };
 
 
-// `Hi, please follow this link to reset your password.Think link is valid untill 10 minutes from now.
-//     // <a href='http://localhost:3001/api/user/reset-password/${token}'>Click here!</a>`

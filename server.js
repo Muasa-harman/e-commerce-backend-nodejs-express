@@ -4,10 +4,12 @@ const app = express()
 const dotenv = require('dotenv').config();
 const authRouter = require('./routes/authRoute');
 const productRouter = require('./routes/productRoute');
+const blogRouter = require('./routes/blogRoute');
+const pCategoryRouter = require('./routes/proCategoryRoute')
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { notFound, errorHandler } = require('./middlewares/errorHandle');
-const morgan = require('morgan')
+const morgan = require('morgan');
 const port = process.env.PORT;
 dbconnect();
 app.use(morgan('dev'));
@@ -16,7 +18,10 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
 
 app.use('/api/user', authRouter)
+app.use('/api/blog', blogRouter)
 app.use('/api/product', productRouter)
+app.use('/api/category', pCategoryRouter)
+
 app.use(notFound);
 app.use(errorHandler);
 
