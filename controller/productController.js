@@ -134,11 +134,21 @@ const addToWishList = asyncHandler(async(req,res,next)=>{
 });
 // rating
 const rating = asyncHandler(async(req,res,next)=>{
-  const {_id} = req.params;
+  const { _id } = req.User;
   const {star,prodId } = req.body;
   try {
     const product = await Product.findById(prodId);
-    let alreadyRated = product.ratings.find((rating)=> rating.postedby.toString() === _id.toString());
+    if (!product) {
+      // Handle the case where the product is not found
+       res.status(404).json({ error: 'Product not found' });
+    }
+    
+    if (!product.ratings || !Array.isArray(product.ratings)) {
+      // Handle the case where ratings is not an array or undefined
+      return res.status(400).json({ error: 'Invalid ratings array' });
+    }
+
+    let alreadyRated = product.ratings.find((userId)=>userId && userId.postedby.toString() === _id.toString());
     
     if(alreadyRated){
       const updateRating = await Product.updateOne(
@@ -149,7 +159,7 @@ const rating = asyncHandler(async(req,res,next)=>{
           $set:{"ratings.$.star":star}
         },{new : true}
       );
-res.json(updateRating);
+      res.status(200).json(updateRating);
     } else{
       const rateProduct = await Product.findByIdAndUpdate(prodId,{
         $push:{
