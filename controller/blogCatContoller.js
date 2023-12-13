@@ -1,4 +1,4 @@
-const BlogCat = require('../models/BlogCat')
+const BlogCat = require("../models/BlogCat");
 const asyncHandler = require("express-async-handler");
 const validateMongoDb = require("../utils/validateMongoDb");
 

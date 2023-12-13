@@ -1,10 +1,10 @@
-const User = require('../models/User');
+const User = require("../models/User");
 const Product = require("../models/Product");
 const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
-const validateMongoDbId = require('../utils/validateMongoDb');
-const cloudinaryUploadingImg = require('../utils/cloudinary');
-const fs = require('fs')
+const validateMongoDbId = require("../utils/validateMongoDb");
+const cloudinaryUploadingImg = require("../utils/cloudinary");
+const fs = require("fs");
 
 //create ptoduct
 const createProduct = asyncHandler(async (req, res, next) => {
@@ -119,16 +119,22 @@ const addToWishList = asyncHandler(async (req, res, next) => {
     const user = await User.findById(_id);
     const alreadyAdded = user.wishlist.find((id) => id.toString() === prodId);
     if (alreadyAdded) {
-      let user = await User.findByIdAndUpdate(_id, {
-        $pull: { wishlist: prodId },
-
-      }, { new: true });
+      let user = await User.findByIdAndUpdate(
+        _id,
+        {
+          $pull: { wishlist: prodId },
+        },
+        { new: true }
+      );
       res.json({ user });
     } else {
-      let user = await User.findByIdAndUpdate(_id, {
-        $push: { wishlist: prodId },
-
-      }, { new: true });
+      let user = await User.findByIdAndUpdate(
+        _id,
+        {
+          $push: { wishlist: prodId },
+        },
+        { new: true }
+      );
       res.json({ user });
     }
   } catch (error) {
@@ -143,15 +149,17 @@ const rating = asyncHandler(async (req, res, next) => {
     const product = await Product.findById(prodId);
     if (!product) {
       // Handle the case where the product is not found
-      res.status(404).json({ error: 'Product not found' });
+      res.status(404).json({ error: "Product not found" });
     }
 
     if (!product.ratings || !Array.isArray(product.ratings)) {
       // Handle the case where ratings is not an array or undefined
-      return res.status(400).json({ error: 'Invalid ratings array' });
+      return res.status(400).json({ error: "Invalid ratings array" });
     }
 
-    let alreadyRated = product.ratings.find((userId) => userId && userId.postedby.toString() === _id.toString());
+    let alreadyRated = product.ratings.find(
+      (userId) => userId && userId.postedby.toString() === _id.toString()
+    );
 
     if (alreadyRated) {
       const updateRating = await Product.updateOne(
@@ -160,28 +168,39 @@ const rating = asyncHandler(async (req, res, next) => {
         },
         {
           $set: { "ratings.$.star": star, "ratings.$.comment": comment },
-        }, { new: true }
+        },
+        { new: true }
       );
       // res.status(200).json(updateRating);
     } else {
-      const rateProduct = await Product.findByIdAndUpdate(prodId, {
-        $push: {
-          ratings: {
-            star: star,
-            comment: comment,
-            postedby: _id,
+      const rateProduct = await Product.findByIdAndUpdate(
+        prodId,
+        {
+          $push: {
+            ratings: {
+              star: star,
+              comment: comment,
+              postedby: _id,
+            },
           },
         },
-      }, { new: true });
+        { new: true }
+      );
       // res.json({rateProduct});
     }
     const getallratings = await Product.findById(prodId);
     let totalRating = getallratings.ratings.length;
-    let ratingsum = getallratings.ratings.map((item) => item.star).reduce((prev, curr) => prev + curr, 0);
+    let ratingsum = getallratings.ratings
+      .map((item) => item.star)
+      .reduce((prev, curr) => prev + curr, 0);
     let actualRating = Math.round(ratingsum / totalRating);
-    let finalproduct = await Product.findByIdAndUpdate(prodId, {
-      totalrating: actualRating,
-    }, { new: true });
+    let finalproduct = await Product.findByIdAndUpdate(
+      prodId,
+      {
+        totalrating: actualRating,
+      },
+      { new: true }
+    );
     res.status(200).json({ finalproduct });
   } catch (error) {
     next(error);
@@ -189,26 +208,32 @@ const rating = asyncHandler(async (req, res, next) => {
 });
 
 const uploadImages = asyncHandler(async (req, res, next) => {
-  const {id} = req.params;
+  const { id } = req.params;
   validateMongoDbId(id);
   try {
-   const uploader = (path) => cloudinaryUploadingImg(path, 'images');
-   const urls = [];
-   const files = req.files;
-   for( const file of files){
-    const {path} = files;
-    const newPath = await uploader(path);
-    urls.push(newPath);
-    fs.unlinkSync(path);
-   }
-   const findProduct = await Product.findByIdAndUpdate(id,{
-    images: urls.map(file=> {return file; })
-   },{new: true,});
-   res.json(findProduct);
+    const uploader = (path) => cloudinaryUploadingImg(path, "images");
+    const urls = [];
+    const files = req.files;
+    for (const file of files) {
+      const { path } = files;
+      const newPath = await uploader(path);
+      urls.push(newPath);
+      fs.unlinkSync(path);
+    }
+    const findProduct = await Product.findByIdAndUpdate(
+      id,
+      {
+        images: urls.map((file) => {
+          return file;
+        }),
+      },
+      { new: true }
+    );
+    res.json(findProduct);
   } catch (error) {
     next(error);
   }
-})
+});
 
 module.exports = {
   createProduct,
@@ -218,5 +243,5 @@ module.exports = {
   deleteProduct,
   addToWishList,
   rating,
-  uploadImages
+  uploadImages,
 };

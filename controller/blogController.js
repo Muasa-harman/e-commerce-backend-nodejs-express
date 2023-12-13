@@ -2,8 +2,8 @@ const Blog = require("../models/Blog");
 const User = require("../models/User");
 const asyncHandler = require("express-async-handler");
 const validateMongoDbId = require("../utils/validateMongoDb");
-const cloudinaryUploadingImg = require("../utils/cloudinary")
-const fs = require("fs")
+const cloudinaryUploadingImg = require("../utils/cloudinary");
+const fs = require("fs");
 
 //create blog
 const createBlog = asyncHandler(async (req, res, next) => {
@@ -31,7 +31,10 @@ const getAblog = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   validateMongoDbId(id);
   try {
-    const getAblog = await Blog.findById(id).populate('likes').populate('dislikes').exec();
+    const getAblog = await Blog.findById(id)
+      .populate("likes")
+      .populate("dislikes")
+      .exec();
     if (!getAblog) {
       // Handle the case where the blog with the given ID is not found
       return res.status(404).json({ error: "Blog not found" });
@@ -79,10 +82,10 @@ const likeBlog = asyncHandler(async (req, res, next) => {
     validateMongoDbId(blogId);
     // find the blog which you want to be liked
     const blog = await Blog.findById(blogId);
-    const {_id} = req.user;
+    const { _id } = req.user;
     // find login User
     const loginUserId = req?.user?._id;
-  
+
     // find if the user has disliked the blog
     const alreadyDisliked = blog?.dislikes?.find(
       (userId) => userId?.toString() === loginUserId?.toString()
@@ -96,7 +99,7 @@ const likeBlog = asyncHandler(async (req, res, next) => {
         },
         { new: true }
       );
-      res.json({ blog , userWhoLiked: null,});
+      res.json({ blog, userWhoLiked: null });
     }
     // find if the user has liked the post
     const isLiked = blog?.isLiked;
@@ -109,7 +112,7 @@ const likeBlog = asyncHandler(async (req, res, next) => {
         },
         { new: true }
       );
-      res.json({ blog, userWhoLiked: null, });
+      res.json({ blog, userWhoLiked: null });
     } else {
       const blog = await Blog.findByIdAndUpdate(
         blogId,
@@ -119,9 +122,9 @@ const likeBlog = asyncHandler(async (req, res, next) => {
         },
         { new: true }
       );
-      console.log("this is the user:", req?.user)
-    
-      res.json({ blog,userWhoLiked: req?.user, });
+      console.log("this is the user:", req?.user);
+
+      res.json({ blog, userWhoLiked: req?.user });
     }
   } catch (error) {
     next(error);
@@ -181,27 +184,32 @@ const dislikeBlog = asyncHandler(async (req, res, next) => {
 });
 
 const uploadImages = asyncHandler(async (req, res, next) => {
-  const {id} = req.params;
+  const { id } = req.params;
   validateMongoDbId(id);
   try {
-   const uploader = (path) => cloudinaryUploadingImg(path, 'images');
-   const urls = [];
-   const files = req.files;
-   for( const file of files){
-    const {path} = files;
-    const newPath = await uploader(path);
-    urls.push(newPath);
-    fs.unlinkSync(path);
-   }
-   const findBlog = await Blog.findByIdAndUpdate(id,{
-    images: urls.map(file=> {return file; })
-   },{new: true,});
-   res.json(findProduct);
+    const uploader = (path) => cloudinaryUploadingImg(path, "images");
+    const urls = [];
+    const files = req.files;
+    for (const file of files) {
+      const { path } = files;
+      const newPath = await uploader(path);
+      urls.push(newPath);
+      fs.unlinkSync(path);
+    }
+    const findBlog = await Blog.findByIdAndUpdate(
+      id,
+      {
+        images: urls.map((file) => {
+          return file;
+        }),
+      },
+      { new: true }
+    );
+    res.json(findProduct);
   } catch (error) {
-    next(error)
+    next(error);
   }
-})
-
+});
 
 module.exports = {
   createBlog,
@@ -212,5 +220,5 @@ module.exports = {
   likeBlog,
   dislikeBlog,
   dislikeBlog,
-  uploadImages
+  uploadImages,
 };

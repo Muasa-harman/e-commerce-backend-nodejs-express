@@ -1,13 +1,11 @@
-const Brand = require('../models/Brand')
+const Brand = require("../models/Brand");
 const asyncHandler = require("express-async-handler");
 const validateMongoDb = require("../utils/validateMongoDb");
 
 const createBrand = asyncHandler(async (req, res, next) => {
   try {
     const newBrand = await Brand.create(req.body);
-    res
-      .status(201)
-      .json({ message: "successfully created brand", newBrand });
+    res.status(201).json({ message: "successfully created brand", newBrand });
   } catch (error) {
     next(error);
   }
